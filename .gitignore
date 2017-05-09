@@ -1,2 +1,5 @@
 venv
 .ipynb_checkpoints
+*.pyc
+*.idea
+cs231n/.idea/*

@@ -29,7 +29,28 @@ def softmax_loss_naive(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  num_classes = W.shape[1]
+  num_train = X.shape[0]
+
+  for train in range(num_train):
+    scores = X[train].dot(W)
+    scores -= np.max(scores) #Numerical stability
+
+    sum_exp = np.sum(np.exp(scores))
+    loss_train = np.exp(scores[y[train]])/ sum_exp
+    loss += -np.log(loss_train)
+    selector = [x for x in range(num_classes) if x != y[train]]
+    #print("%s %s" % (y[train],loss_train))
+    #print(selector)
+    for aclass in range(num_classes):
+      loss_class = np.exp(scores[aclass]) / sum_exp
+      dW[:, aclass] += -((aclass == y[train]) - loss_class) * X[train]
+
+  loss /= num_train
+  loss += 0.5 * reg * np.sum(W * W)
+
+  dW /= num_train
+  dW += reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -53,7 +74,27 @@ def softmax_loss_vectorized(W, X, y, reg):
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  num_train = X.shape[0]  # N
+  scores = X.dot(W)  # W . X
+  scores -= np.max(scores)
+
+  sum_exp = np.sum(np.exp(scores), axis=1)
+  loss_train = np.exp(scores[np.arange(num_train), y]) / sum_exp
+  loss = np.sum(-np.log(loss_train))
+
+  #print(scores[np.arange(num_train), y].shape)
+  #print(scores.shape)
+  #print(sum_exp[:,np.newaxis].shape)
+  gradient = np.exp(scores) / sum_exp[:,np.newaxis]
+  #print(gradient.shape)
+  gradient[np.arange(num_train), y] = -(1 - gradient[np.arange(num_train), y])
+  dW = X.T.dot(gradient)
+
+  loss /= num_train
+  loss += 0.5 * reg * np.sum(W*W)
+
+  dW /= num_train
+  dW += reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
